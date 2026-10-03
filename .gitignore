@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+!.env.production
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Keep internal Markdown guides out of Git; publish the root README only.
+*.[mM][dD]
+!/README.md

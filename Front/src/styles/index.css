@@ -1,0 +1,389 @@
+/* ==========================================================================
+   Design & More — Atelier Nile Minimal Design System
+   Source: Front/DESIGN.md & USER_WEBSITE_GUIDE.md
+   ========================================================================== */
+
+:root {
+  /* Canvas & Surfaces */
+  --surface-base: #FBF9F5;       /* Warm Ivory base ground */
+  --surface-subtle: #F5F1EB;     /* Alabaster Sand (secondary ground) */
+  --surface-container: #EFECE6;  /* Pale Limestone (cards & containers) */
+  --surface-raised: #FFFFFF;     /* Pure White (elevated cards, modals) */
+  --surface-dark: #1A1D1B;       /* Deep Charcoal for high-contrast sections */
+
+  /* Inks & Typography */
+  --text-primary: #1F2421;       /* Basalt Charcoal (headings, body) */
+  --text-secondary: #2C302E;     /* Deep Slate */
+  --text-tertiary: #5A5D5A;      /* Weathered Stone (muted, captions) */
+  --text-inverse: #FBF9F5;       /* Warm Ivory */
+
+  /* Architectural Bronze Accents */
+  --brand-bronze: #9E7D53;       /* Warm Muted Bronze (hover, primary accents) */
+  --brand-bronze-light: #B8976C; /* Sunlit Brass */
+  --brand-bronze-dark: #7D613D;  /* Aged Bronze (active links, pressed) */
+
+  /* Structural Dividers & Hairlines */
+  --border-subtle: #E5DFD5;      /* Fine Mortar (1px hairline cards, dividers) */
+  --border-strong: #D9D1C5;      /* Honed Limestone (focus, active borders) */
+
+  /* Semantic Feedback */
+  --color-success: #2D6A4F;      /* Nile Cypress */
+  --color-warning: #C67D26;      /* Desert Ochre */
+  --color-error: #9E3A2B;        /* Terracotta Silt */
+  --color-info: #1D3557;         /* Lapis Deep */
+
+  /* Elevations & Daylight Depth */
+  --shadow-level-1: 0 1px 3px rgba(31, 36, 33, 0.03), 0 4px 12px rgba(31, 36, 33, 0.04);
+  --shadow-level-2: 0 8px 24px rgba(31, 36, 33, 0.06), 0 2px 6px rgba(158, 125, 83, 0.06);
+  --shadow-level-3: 0 12px 32px rgba(31, 36, 33, 0.08), 0 2px 8px rgba(31, 36, 33, 0.04);
+  --shadow-level-4: 0 24px 48px rgba(31, 36, 33, 0.12);
+
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-normal: 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Layout max width */
+  --max-width: 1400px;
+}
+
+/* Base Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--surface-base);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Headings */
+h1, h2, h3, h4, .font-serif {
+  font-family: 'Playfair Display', Georgia, serif;
+  color: var(--text-primary);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+/* Arabic RTL Support */
+html[dir="rtl"] body {
+  font-family: 'Cairo', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+html[dir="rtl"] h1,
+html[dir="rtl"] h2,
+html[dir="rtl"] h3,
+html[dir="rtl"] h4,
+html[dir="rtl"] .font-serif {
+  font-family: 'Amiri', serif;
+  letter-spacing: 0;
+}
+
+/* Common Links & Buttons */
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+input, textarea, select {
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  background-color: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  outline: none;
+  transition: all var(--transition-fast);
+  width: 100%;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--brand-bronze);
+  box-shadow: 0 0 0 2px rgba(158, 125, 83, 0.15);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.65;
+}
+
+/* Layout Containers */
+.container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    padding-left: 3.5rem;
+    padding-right: 3.5rem;
+  }
+}
+
+/* Tectonic Hairline Utility */
+.hairline-b {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.hairline-t {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.hairline-y {
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Section Spacing */
+.section-py {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+
+@media (max-width: 768px) {
+  .section-py {
+    padding-top: 3.25rem;
+    padding-bottom: 3.25rem;
+  }
+}
+
+/* Architectural Button Variants */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 0.75rem 1.6rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-normal);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background-color: var(--text-primary);
+  color: var(--surface-base);
+  border: 1px solid var(--text-primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--brand-bronze);
+  border-color: var(--brand-bronze);
+  color: #FFFFFF;
+  box-shadow: var(--shadow-level-2);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+}
+
+.btn-secondary:hover {
+  background-color: var(--surface-subtle);
+  border-color: var(--brand-bronze);
+  color: var(--brand-bronze-dark);
+}
+
+.btn-bronze {
+  background-color: var(--brand-bronze);
+  color: #FFFFFF;
+  border: 1px solid var(--brand-bronze);
+}
+
+.btn-bronze:hover {
+  background-color: var(--brand-bronze-dark);
+  border-color: var(--brand-bronze-dark);
+  box-shadow: var(--shadow-level-2);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.btn-ghost:hover {
+  color: var(--brand-bronze);
+}
+
+/* Architectural Tags & Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.725rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+}
+
+.badge-bronze {
+  background-color: rgba(158, 125, 83, 0.12);
+  color: var(--brand-bronze-dark);
+  border: 1px solid rgba(158, 125, 83, 0.25);
+}
+
+.badge-success {
+  background-color: rgba(45, 106, 79, 0.1);
+  color: var(--color-success);
+  border: 1px solid rgba(45, 106, 79, 0.2);
+}
+
+.badge-subtle {
+  background-color: var(--surface-container);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+}
+
+/* Architectural Product Card (4:5 Aspect Ratio) */
+.product-card {
+  background-color: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card:hover {
+  box-shadow: var(--shadow-level-2);
+  border-color: var(--border-strong);
+  transform: translateY(-3px);
+}
+
+.product-card-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  background-color: var(--surface-container);
+  overflow: hidden;
+}
+
+.product-card-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+
+.product-card:hover .product-card-img-wrap img {
+  transform: scale(1.04);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface-subtle);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-bronze);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.35s ease forwards;
+}
+
+@keyframes pulseSubtle {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 8px 24px rgba(37, 211, 102, 0.55);
+  }
+}
+
+.pulse-whatsapp {
+  animation: pulseSubtle 3s infinite ease-in-out;
+}
+
+/* Responsive visibility & grid helpers */
+@media (max-width: 767px) {
+  .d-none-mobile {
+    display: none !important;
+  }
+  .d-mobile-flex {
+    display: flex !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  .d-none-tablet {
+    display: none !important;
+  }
+  .col-12-tablet {
+    grid-column: span 12 !important;
+  }
+}

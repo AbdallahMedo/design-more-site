@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 84" fill="none">
+  <!-- Monogram Lockup Left -->
+  <g transform="translate(10, 4)">
+    <!-- Architectural datum lines -->
+    <path d="M 28 4 L 56 4 L 56 32" stroke="#B8976C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.9" />
+    <path d="M 4 24 L 4 52 L 32 52" stroke="#FBF9F5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.8" />
+    
+    <!-- D Monogram (Sunlit Brass) -->
+    <path d="M 12 10 H 26 C 36 10 44 17 44 28 C 44 39 36 46 26 46 H 12 V 10 Z M 19 16 V 40 H 25 C 32 40 37 35 37 28 C 37 21 32 16 25 16 H 19 Z" fill="#B8976C" />
+    
+    <!-- M Monogram (Ivory) -->
+    <path d="M 26 18 L 37 46 L 47 24 L 57 46 L 61 18 H 55 L 53 38 L 45 20 H 42 L 34 38 L 32 18 H 26 Z" fill="#FBF9F5" />
+  </g>
+
+  <!-- Typography Right -->
+  <g transform="translate(86, 0)">
+    <text x="0" y="44" font-family="'Playfair Display', Georgia, serif" font-size="27" font-weight="500" letter-spacing="0.12em" fill="#FBF9F5">
+      DESIGN <tspan fill="#B8976C">&amp;</tspan> MORE
+    </text>
+    <text x="3" y="64" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="8.5" font-weight="500" letter-spacing="0.32em" fill="#E5DFD5">
+      INTERIORS  |  LIFESTYLE  |  BEYOND
+    </text>
+  </g>
+</svg>

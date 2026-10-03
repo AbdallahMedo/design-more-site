@@ -1,0 +1,5 @@
+Tool: built-in image_gen
+Source: Front/Logo/logo.png
+Output: Front/public/logo/logo-hq.png
+
+Faithfully clean up this exact logo for web use. OPAQUE SOLID WHITE / IVORY BACKGROUND, RGB #FBF9F5 across every background pixel. NO TRANSPARENCY. NO GLOW. NO GRADIENTS. NO SHADOWS. Crisp solid dark charcoal text and M, solid bronze D and ampersand. Keep original overlapping DM shapes, corner lines and exact text DESIGN & MORE and INTERIORS | LIFESTYLE | BEYOND. Same original stacked layout, but tightly crop away unused margins so logo fills 90% of canvas. High resolution 1536x1024 or greater. Flat sharp professional logo artwork, not a photo or mockup. Preserve original identity.

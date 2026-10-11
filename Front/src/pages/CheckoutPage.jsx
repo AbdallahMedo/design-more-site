@@ -1,5 +1,5 @@
 import { apiAssetUrl } from '../config/api';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck, Truck, ArrowLeft, ArrowRight, AlertCircle, ShoppingBag } from 'lucide-react';
 import { ordersApi } from '../api/ordersApi';
@@ -15,9 +15,47 @@ export const CheckoutPage = () => {
   const navigate = useNavigate();
 
   const [governorates, setGovernorates] = useState([]);
+  const [governoratesLoading, setGovernoratesLoading] = useState(true);
   const [selectedGovId, setSelectedGovId] = useState('');
-  const [shippingCost, setShippingCost] = useState(75.00);
+  const [shippingCost, setShippingCost] = useState(0);
 
+  const [promoInput, setPromoInput] = useState('');
+  const [promoQuote, setPromoQuote] = useState(null);
+  const [promoBusy, setPromoBusy] = useState(false);
+  const [promoError, setPromoError] = useState('');
+  const checkoutKey = JSON.stringify([items.map(item => [item.productId || item.id, item.quantity]), selectedGovId, promoInput, isAuthenticated, user?.id]);
+  const latestKey = useRef(checkoutKey);
+  const revision = useRef(0);
+  if (latestKey.current !== checkoutKey) revision.current += 1;
+  latestKey.current = checkoutKey;
+  const operation = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  const activeQuote = promoQuote?.checkoutKey === checkoutKey && promoQuote?.revision === revision.current ? promoQuote : null;
+  useEffect(() => { setPromoQuote(null); setPromoError(''); }, [checkoutKey]);
+  const apiError = (err, fallback) => err.response?.data?.message || err.response?.data?.detail || err.message || fallback;
+  const handleApplyPromo = async () => {
+    if (operation.current || !promoInput.trim() || !selectedGovId || !items.length) return;
+    if (!isAuthenticated) { openAuthModal('login'); return; }
+    operation.current = true;
+    const requestKey = checkoutKey;
+    const requestRevision = revision.current;
+    setPromoBusy(true); setPromoError(''); setPromoQuote(null);
+    try {
+      await ordersApi.prepareCart(items);
+      if (!mounted.current || revision.current !== requestRevision) return;
+      const quote = await ordersApi.applyPromoCode(promoInput.trim(), selectedGovId);
+      if (mounted.current && revision.current === requestRevision) setPromoQuote({ ...quote, checkoutKey: requestKey, revision: requestRevision });
+    } catch (err) {
+      if (mounted.current && revision.current === requestRevision) {
+        setPromoError(apiError(err, language === 'ar' ? 'تعذر تطبيق كود الخصم.' : 'Unable to apply promo code.'));
+        if (err.response?.status === 401) openAuthModal('login');
+      }
+    } finally {
+      operation.current = false;
+      if (mounted.current) setPromoBusy(false);
+    }
+  };
   // Form Fields
   const [customerName, setCustomerName] = useState(user?.name || '');
   const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || '');
@@ -32,13 +70,14 @@ export const CheckoutPage = () => {
   useEffect(() => {
     const loadGovs = async () => {
       const data = await ordersApi.getGovernorates();
+      if (!data?.length) throw new Error(language === 'ar' ? 'لا توجد محافظات متاحة للتوصيل حالياً.' : 'No delivery governorates are currently available.');
       setGovernorates(data || []);
       if (data && data.length > 0) {
         setSelectedGovId(data[0].name);
         setShippingCost(data[0].deliveryFee);
       }
     };
-    loadGovs();
+    loadGovs().catch(err => setError(apiError(err, language === 'ar' ? 'تعذر تحميل المحافظات.' : 'Unable to load governorates.'))).finally(() => setGovernoratesLoading(false));
   }, []);
 
   const handleGovChange = (govName) => {
@@ -49,10 +88,13 @@ export const CheckoutPage = () => {
     }
   };
 
-  const grandTotal = subtotal + shippingCost;
+  const displayedSubtotal = activeQuote?.subtotal ?? subtotal;
+  const displayedShipping = activeQuote?.shippingCost ?? shippingCost;
+  const grandTotal = displayedSubtotal - (activeQuote?.discountAmount ?? 0) + displayedShipping;
 
   const handleSubmitOrder = async (e) => {
     e.preventDefault();
+    if (operation.current) return;
     setError('');
 
     if (items.length === 0) {
@@ -73,41 +115,38 @@ export const CheckoutPage = () => {
       return;
     }
 
+    if (!selectedGovId) { setError(language === 'ar' ? 'يرجى اختيار المحافظة.' : 'Please select an available governorate.'); return; }
+    if (promoInput.trim() && !activeQuote) { setPromoError(language === 'ar' ? 'طبق الكود أو امسحه قبل تأكيد الطلب.' : 'Apply the code or remove it before placing your order.'); return; }
+    operation.current = true;
+    const requestRevision = revision.current;
     setSubmitting(true);
     try {
+      await ordersApi.prepareCart(items);
+      if (revision.current !== requestRevision) throw new Error(language === 'ar' ? 'تغيرت تفاصيل الطلب. يرجى المحاولة مجدداً.' : 'Checkout changed. Please review and try again.');
       const orderPayload = {
         customerName,
         phoneNumber,
-        whatsAppNumber: whatsAppNumber || phoneNumber,
+        whatsAppNumber,
         address,
         city,
         governorate: selectedGovId,
         customerNotes,
-        subtotal,
-        shippingCost,
-        total: grandTotal,
-        items: items.map((i) => ({
-          productId: i.productId || i.id,
-          productTitleEn: i.titleEn,
-          productTitleAr: i.titleAr,
-          unitPrice: i.price,
-          quantity: i.quantity,
-          totalPrice: i.price * i.quantity,
-          imageUrl: i.imageUrl,
-        })),
+        ...(activeQuote ? { promoCode: activeQuote.promoCode } : {}),
       };
 
       const result = await ordersApi.createOrder(orderPayload);
+      if (!result?.id) throw new Error(language === 'ar' ? 'لم يرجع الخادم رقم الطلب. تحقق من طلباتك قبل المحاولة مجدداً.' : 'The server did not return an order ID. Check your orders before retrying.');
       clearCart();
-      navigate(`/orders/${result.orderNumber || result.id}/success`, { state: { order: result } });
+      navigate(`/orders/${result.id}/success`, { state: { order: result } });
     } catch (err) {
       if (err.response?.status === 401) {
         setError(language === 'ar' ? 'جلسة الدخول منتهية. يرجى تسجيل الدخول مجدداً لإتمام الطلب.' : 'Please sign in or create an account to place your order.');
         openAuthModal('login');
       } else {
-        setError(err.response?.data?.message || 'Failed to submit order. Please check connection.');
+        setError(apiError(err, language === 'ar' ? 'تعذر إرسال الطلب.' : 'Failed to submit order. Please check connection.'));
       }
     } finally {
+      operation.current = false;
       setSubmitting(false);
     }
   };
@@ -159,6 +198,7 @@ export const CheckoutPage = () => {
         )}
 
         <form onSubmit={handleSubmitOrder}>
+          <fieldset disabled={submitting} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '3rem' }}>
             {/* Left Column: Client & Shipping Details (7 cols) */}
             <div style={{ gridColumn: 'span 7' }} className="col-12-tablet">
@@ -226,10 +266,12 @@ export const CheckoutPage = () => {
                       {str('governorate')} *
                     </label>
                     <select
+                      disabled={governoratesLoading}
                       value={selectedGovId}
                       onChange={(e) => handleGovChange(e.target.value)}
                       required
                     >
+                      {!selectedGovId && <option value="">{governoratesLoading ? (language === 'ar' ? 'جارٍ التحميل...' : 'Loading...') : (language === 'ar' ? 'اختر المحافظة' : 'Select governorate')}</option>}
                       {governorates.map((gov) => (
                         <option key={gov.id} value={gov.name}>
                           {language === 'ar' ? gov.nameAr : gov.name} — ({formatEGP(gov.deliveryFee, language)})
@@ -313,6 +355,15 @@ export const CheckoutPage = () => {
                   Commission Summary ({items.length})
                 </h2>
 
+                <div>
+                  <label htmlFor="promo-code">{language === 'ar' ? 'كود الخصم' : 'Promo code'}</label>
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                    <input id="promo-code" value={promoInput} disabled={submitting} onChange={e => setPromoInput(e.target.value)} placeholder="MD-..." />
+                    <button type="button" className="btn btn-secondary" onClick={handleApplyPromo} disabled={promoBusy || submitting || !promoInput.trim() || !selectedGovId}>{promoBusy ? (language === 'ar' ? 'جارٍ التطبيق...' : 'Applying...') : (language === 'ar' ? 'تطبيق' : 'Apply')}</button>
+                  </div>
+                  {promoError && <p role="alert" style={{ color: 'var(--color-error)' }}>{promoError}</p>}
+                  {activeQuote && <p>{language === 'ar' ? 'تم تطبيق الخصم على المنتجات فقط' : 'Discount applied to products only'} ({activeQuote.discountPercentage}%)</p>}
+                </div>
                 {/* Items preview */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', maxHeight: '240px', overflowY: 'auto' }}>
                   {items.map((item) => (
@@ -336,14 +387,15 @@ export const CheckoutPage = () => {
                 <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.92rem' }}>
                     <span style={{ color: 'var(--text-secondary)' }}>{str('subtotal')}</span>
-                    <span style={{ fontWeight: 600 }}>{formatEGP(subtotal, language)}</span>
+                    <span style={{ fontWeight: 600 }}>{formatEGP(displayedSubtotal, language)}</span>
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.92rem' }}>
                     <span style={{ color: 'var(--text-secondary)' }}>{str('deliveryFee')}</span>
-                    <span style={{ fontWeight: 600, color: 'var(--brand-bronze-dark)' }}>{formatEGP(shippingCost, language)}</span>
+                    <span style={{ fontWeight: 600, color: 'var(--brand-bronze-dark)' }}>{formatEGP(displayedShipping, language)}</span>
                   </div>
 
+                  {activeQuote && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>{language === 'ar' ? 'الخصم' : 'Discount'} ({activeQuote.discountPercentage}%)</span><span>-{formatEGP(activeQuote.discountAmount, language)}</span></div>}
                   <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                     <span style={{ fontWeight: 600, fontSize: '1.1rem' }}>{str('total')}</span>
                     <span style={{ fontWeight: 700, fontSize: '1.5rem', color: 'var(--brand-bronze-dark)' }}>
@@ -354,7 +406,7 @@ export const CheckoutPage = () => {
 
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={submitting || promoBusy || !selectedGovId}
                   className="btn btn-primary"
                   style={{ width: '100%', padding: '0.95rem', fontSize: '1rem', gap: '0.6rem', marginTop: '0.5rem' }}
                 >
@@ -369,6 +421,7 @@ export const CheckoutPage = () => {
               </div>
             </div>
           </div>
+          </fieldset>
         </form>
       </div>
     </div>

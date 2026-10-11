@@ -1,7 +1,7 @@
 import { apiAssetUrl } from '../../config/api';
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Star, ShoppingBag, Eye } from 'lucide-react';
+import { Heart, ShoppingBag, Eye } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
@@ -111,13 +111,6 @@ export const ProductCard = ({ product }) => {
 
       {/* Product Content Details */}
       <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
-        {/* Rating and Reviews */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.4rem', fontSize: '0.78rem', color: 'var(--brand-bronze-dark)' }}>
-          <Star size={13} fill="var(--brand-bronze)" color="var(--brand-bronze)" />
-          <span style={{ fontWeight: 600 }}>{product.averageRating || 4.9}</span>
-          <span style={{ color: 'var(--text-tertiary)' }}>({product.reviewsCount || 8})</span>
-        </div>
-
         {/* Title */}
         <Link 
           to={`/product/${product.slug}`}

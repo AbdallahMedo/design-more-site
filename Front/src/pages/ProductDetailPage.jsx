@@ -188,17 +188,6 @@ export const ProductDetailPage = () => {
 
           {/* Product Specifications & Purchase Right (5 cols) */}
           <div style={{ gridColumn: 'span 5', display: 'flex', flexDirection: 'column' }} className="col-12-tablet">
-            {/* Rating */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: 'var(--brand-bronze-dark)', marginBottom: '0.6rem' }}>
-              <div style={{ display: 'flex', gap: '2px' }}>
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={14} fill="var(--brand-bronze)" color="var(--brand-bronze)" />
-                ))}
-              </div>
-              <span style={{ fontWeight: 600 }}>{product.averageRating || 4.9}</span>
-              <span style={{ color: 'var(--text-tertiary)' }}>({reviews.length} reviews)</span>
-            </div>
-
             {/* Title */}
             <h1 style={{ fontSize: 'clamp(1.8rem, 2.8vw, 2.4rem)', color: 'var(--text-primary)', lineHeight: 1.25, marginBottom: '0.5rem' }}>
               {t(product, 'title')}
@@ -415,7 +404,7 @@ export const ProductDetailPage = () => {
                         </div>
 
                         <div style={{ display: 'flex', gap: '2px' }}>
-                          {[...Array(rev.rating || 5)].map((_, i) => (
+                          {[...Array(rev.rating || 0)].map((_, i) => (
                             <Star key={i} size={13} fill="var(--brand-bronze)" color="var(--brand-bronze)" />
                           ))}
                         </div>

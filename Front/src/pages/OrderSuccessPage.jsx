@@ -5,17 +5,21 @@ import { CheckCircle2, MessageSquare, ArrowRight, ArrowLeft, Printer, ShoppingBa
 import { ordersApi } from '../api/ordersApi';
 import { contactInfo } from '../config/contactInfo';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { formatEGP } from '../utils/bilingual';
 
 export const OrderSuccessPage = () => {
   const { id } = useParams();
   const location = useLocation();
   const { language, isRTL, str } = useLanguage();
+  const { openAuthModal, isAuthenticated } = useAuth();
 
   const [order, setOrder] = useState(location.state?.order || null);
   const [loading, setLoading] = useState(!location.state?.order);
+  const [error, setError] = useState('');
 
   useEffect(() => {
+    let cancelled = false;
     // Launch celebratory confetti
     try {
       confetti({
@@ -28,15 +32,36 @@ export const OrderSuccessPage = () => {
       // safe fallback
     }
 
-    if (!order && id) {
+    const cached = location.state?.order;
+    setError('');
+    setOrder(cached?.id === id ? cached : null);
+    setLoading(cached?.id !== id);
+    if (cached?.id !== id && id) {
       const fetchOrder = async () => {
-        const data = await ordersApi.getOrderById(id);
-        setOrder(data);
-        setLoading(false);
+        try {
+          const data = await ordersApi.getOrderById(id);
+          if (!data?.id) throw new Error('Unable to retrieve order.');
+          if (!cancelled) setOrder(data);
+        } catch (err) {
+          if (!cancelled) {
+            setError(err.response?.data?.message || (language === 'ar' ? 'تعذر تحميل الطلب. يرجى تسجيل الدخول والمحاولة مجدداً.' : 'Unable to load your order. Please sign in and try again.'));
+            if (err.response?.status === 401) openAuthModal('login');
+          }
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
       };
       fetchOrder();
     }
-  }, [id]);
+    return () => { cancelled = true; };
+  }, [id, location.state?.order, isAuthenticated]);
+
+  if (loading || error || !order) return (
+    <div className="container" style={{ padding: '4rem 0', minHeight: '60vh', textAlign: 'center' }}>
+      <p role={error ? 'alert' : 'status'}>{loading ? (language === 'ar' ? 'جارٍ تحميل الطلب...' : 'Loading your order...') : error}</p>
+      {!loading && <button className="btn btn-secondary" onClick={() => window.location.reload()}>{language === 'ar' ? 'المحاولة مجدداً' : 'Try again'}</button>}
+    </div>
+  );
 
   const orderNum = order?.orderNumber || id;
   const whatsAppCoordinateUrl = `https://wa.me/${contactInfo.communication.whatsApp.number.replace('+', '')}?text=${encodeURIComponent(
@@ -124,7 +149,7 @@ export const OrderSuccessPage = () => {
                 {str('total')}
               </span>
               <div style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                {formatEGP(order?.total || 14575, language)}
+                {formatEGP(order?.total ?? 0, language)}
               </div>
             </div>
           </div>
@@ -143,7 +168,7 @@ export const OrderSuccessPage = () => {
               }}
             >
               <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.35rem' }}>
-                Delivery Destination:
+                {str('address')}:
               </div>
               <div>{order.customerName} ({order.phoneNumber})</div>
               <div style={{ color: 'var(--text-secondary)' }}>
@@ -151,7 +176,7 @@ export const OrderSuccessPage = () => {
               </div>
               {order.customerNotes && (
                 <div style={{ color: 'var(--text-tertiary)', fontStyle: 'italic', marginTop: '0.25rem' }}>
-                  Note: "{order.customerNotes}"
+                  {str('customerNotes')}: "{order.customerNotes}"
                 </div>
               )}
             </div>

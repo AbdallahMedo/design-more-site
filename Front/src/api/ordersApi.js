@@ -1,15 +1,18 @@
 import apiClient from './axiosClient';
+import { reconcileCart } from './cartSync';
 
 export const ordersApi = {
+  async prepareCart(items) {
+    await reconcileCart(apiClient, items);
+  },
+  async applyPromoCode(code, governorate) {
+    const { data } = await apiClient.post('/api/promo-codes/apply', { code, governorate });
+    return data;
+  },
   // Get Delivery Governorates directly from backend API
   async getGovernorates() {
-    try {
-      const response = await apiClient.get('/api/delivery-governorates');
-      return Array.isArray(response.data) ? response.data : [];
-    } catch (err) {
-      console.error('Failed to load governorates from API:', err.message);
-      return [];
-    }
+    const response = await apiClient.get('/api/delivery-governorates');
+    return Array.isArray(response.data) ? response.data : [];
   },
 
   // Place Cash-on-Delivery or Authenticated Order directly to backend API

@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import apiClient from '../api/axiosClient';
 
 const CartContext = createContext();
 
@@ -22,24 +21,6 @@ export const CartProvider = ({ children }) => {
       console.error(e);
     }
   }, [items]);
-
-  // Synchronize with server if logged in
-  const syncServerCart = async () => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return;
-    try {
-      const res = await apiClient.get('/api/cart');
-      if (res.data?.items) {
-        setItems(res.data.items);
-      }
-    } catch (e) {
-      // Ignore if offline
-    }
-  };
-
-  useEffect(() => {
-    syncServerCart();
-  }, []);
 
   const addItem = (product, quantity = 1) => {
     setItems((prevItems) => {

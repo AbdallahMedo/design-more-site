@@ -48,11 +48,20 @@ export const Footer = () => {
         >
           {/* Column 1: Brand & Philosophy */}
           <div>
-            <Link to="/" style={{ display: 'inline-block', marginBottom: '1.25rem' }}>
+            <Link
+              to="/"
+              style={{
+                display: 'inline-block',
+                marginBottom: '1.25rem',
+                padding: '0.75rem',
+                backgroundColor: '#FBF9F5',
+                borderRadius: 'var(--radius-sm)'
+              }}
+            >
               <img 
                 src={`${import.meta.env.BASE_URL}logo/logo-hq.png`} 
                 alt="Design & More" 
-                style={{ height: 'auto', width: '240px', maxWidth: '100%', objectFit: 'contain', display: 'block', borderRadius: 'var(--radius-sm)' }}
+                style={{ height: 'auto', width: '240px', maxWidth: '100%', objectFit: 'contain', display: 'block' }}
               />
             </Link>
             
